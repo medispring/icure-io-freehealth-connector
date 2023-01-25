@@ -66,7 +66,7 @@ class EAgreementController(val eAgreementService: EAgreementService, val mapper:
         @RequestParam(required = false) patientSsin: String?,
         @RequestParam(required = false) patientIo: String?,
         @RequestParam(required = false) patientIoMembership: String?,
-        @RequestBody(required = false) extendAgreementRequest: ExtendAgreementRequest
+        @RequestBody extendAgreementRequest: ExtendAgreementRequest
     ): ExtendAgreementResponse {
         return eAgreementService.extendAgreement(
             keystoreId = keystoreId,
