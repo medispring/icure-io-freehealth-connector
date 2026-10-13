@@ -322,9 +322,11 @@ class EagreementServiceUtilsImpl(): EagreementServiceUtils {
             requester = Reference().apply {
                 reference = "PractitionerRole/PractitionerRole2"
             }
-            supportingInfo = listOf(Reference().apply {
-                reference = "#annexSR$annexId"
-            })
+            if (data.isNotEmpty()) {
+                supportingInfo = listOf(Reference().apply {
+                    reference = "#annexSR$annexId"
+                })
+            }
         }
     }
 
@@ -739,12 +741,15 @@ class EagreementServiceUtilsImpl(): EagreementServiceUtils {
             val serviceRequest1 = JsonObject()
             serviceRequest1.addProperty("fullUrl" , "urn:uuid:" + uuidGenerator.generateId())
             val prescriptionDateNonNull = prescriptionDate ?: DateTime.now()
-            serviceRequest1.add("resource", JsonParser().parse(mapper.writeValueAsString(getServiceRequest("1", "", prescription1!!, "1", numberOfSessionForPrescription1!!, patientFirstName, patientLastName, patientGender, prescriptionDateNonNull, patientSsin, patientIo, patientIoMembership, sctCode, sctDisplay))).asJsonObject)
-            serviceRequest1.getAsJsonObject("resource").getAsJsonObject("ServiceRequest").add("contained", JsonParser().parse(mapper.writeValueAsString( Binary(
-                contentType = "application/pdf",
-                data = prescription1,
-                id = "annexSR1"
-            ))).asJsonObject)
+            val prescriptionData = if (requestType == EagreementServiceImpl.RequestTypeEnum.ARGUE) prescription1.orEmpty() else prescription1!!
+            serviceRequest1.add("resource", JsonParser().parse(mapper.writeValueAsString(getServiceRequest("1", "", prescriptionData, "1", numberOfSessionForPrescription1!!, patientFirstName, patientLastName, patientGender, prescriptionDateNonNull, patientSsin, patientIo, patientIoMembership, sctCode, sctDisplay))).asJsonObject)
+            if (prescriptionData.isNotEmpty()) {
+                serviceRequest1.getAsJsonObject("resource").getAsJsonObject("ServiceRequest").add("contained", JsonParser().parse(mapper.writeValueAsString( Binary(
+                    contentType = "application/pdf",
+                    data = prescriptionData,
+                    id = "annexSR1"
+                ))).asJsonObject)
+            }
             serviceRequest1.getAsJsonObject("resource").getAsJsonObject("ServiceRequest").getAsJsonObject("quantityQuantity").addProperty("value", numberOfSessionForPrescription1.toInt())
             gson.getAsJsonObject("Bundle").getAsJsonArray("entry").add(serviceRequest1)
         }

@@ -512,4 +512,52 @@ class EagreementServiceUtilsTest {
             );
         println("Result: "+ObjectMapper().registerModule(KotlinModule()).writeValueAsString(bundle))*/
     }
+
+    @Test
+    fun getArgueBundleWithoutPrescription1() {
+        val bundle = agreementServiceUtils.getBundleJSON(
+            requestType = EagreementServiceImpl.RequestTypeEnum.ARGUE,
+            messageFocusReference = "Claim/Claim1",
+            messageEventSystem = EagreementServiceImpl.MessageEventSystemEnum.MESSAGE_EVENTS,
+            messageEventCode = "claim-argue",
+            patientFirstName = "Jane",
+            patientLastName = "Doe",
+            patientGender = "female",
+            patientSsin = "12345678901",
+            patientIo = null,
+            patientIoMembership = null,
+            hcpNihii = "12345678901",
+            hcpFirstName = "Alex",
+            hcpLastName = "Smith",
+            prescriberNihii = "10987654321",
+            prescriberFirstName = "Sam",
+            prescriberLastName = "Jones",
+            orgNihii = null,
+            organizationType = null,
+            prescription1 = null,
+            prescription2 = null,
+            agreementStartDate = null,
+            agreementEndDate = null,
+            agreementType = "physiotherapy",
+            numberOfSessionForPrescription1 = 10f,
+            numberOfSessionForPrescription2 = null,
+            insuranceRef = "InsuranceRef123",
+            pathologyCode = null,
+            pathologyStartDate = null,
+            sctCode = null,
+            sctDisplay = null,
+            subTypeCode = null,
+            attachments = null,
+            prescriptionDate = DateTime.now()
+        )!!
+
+        val entries = bundle.getAsJsonObject("Bundle").getAsJsonArray("entry")
+        val serviceRequest = entries.first {
+            it.asJsonObject.getAsJsonObject("resource").has("ServiceRequest")
+        }.asJsonObject.getAsJsonObject("resource").getAsJsonObject("ServiceRequest")
+
+        assertThat(serviceRequest.has("supportingInfo")).isFalse()
+        assertThat(serviceRequest.has("contained")).isFalse()
+        assertThat(bundle.toString()).contains("ServiceRequest/ServiceRequest1")
+    }
 }
